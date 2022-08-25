@@ -6,7 +6,7 @@ coverage
 coverage.json
 typechain
 typechain-types
-contracts/ERC1155
+ERC1155
 examples
 
 #Hardhat files
