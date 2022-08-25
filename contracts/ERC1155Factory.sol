@@ -19,13 +19,8 @@ contract FactoryERC1155 {
     _ids - IDs the ERC1155 token should contain
     _name - Names each ID should map to. Case-sensitive.
     */
-    function createERC1155(string memory _contractName, string memory _uri, uint[] memory _ids, string[] memory _names) public returns (address) {
-        ERC1155Ticketing t = new ERC1155Ticketing(_contractName, _uri, _names, _ids);
-        tokens.push(t);
-        indexToContract[tokens.length - 1] = address(t);
-        indexToOwner[tokens.length - 1] = tx.origin;
-        emit ERC1155Created(msg.sender,address(t));
-        return address(t);
+    function createERC1155(address _token) public returns (address) {
+        
     }
 
     /*

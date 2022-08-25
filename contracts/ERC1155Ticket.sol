@@ -23,20 +23,20 @@ contract ERC1155Ticketing is ERC1155, Ownable {
 
     //Mapping of token ID to its price per token/ticket
     mapping(uint256 => uint256) public _ticketPrice;
-    
-    //Mapping from token name to token ID
-    mapping(string => uint) public nameToId; 
 
-    //Mapping from token ID to token name
-    mapping(uint => string) public idToName;  
+    //Mapping of token ID to its owner
+    mapping(uint256 => address) public _idToOwner;
 
     event TokentypeCreated(uint256 id, uint256 amount);
 
 
-    constructor(address token_) ERC1155("https://example.com/{id}.json") {
+    constructor(address token_, uint256 id_) ERC1155("https://example.com/{id}.json") {
+        //managerId => uniqueEventId
+        //include unqiue event Id and token Id
+        //route to event itself and then to token type
         paymentToken = IERC20(token_);
     }
-
+    
     /**
      * @notice mint new tickets of a ticket type
      * @dev emits an event if its a new ticket type
