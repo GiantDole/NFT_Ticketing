@@ -23,6 +23,12 @@ contract ERC1155Ticketing is ERC1155, Ownable {
 
     //Mapping of token ID to its price per token/ticket
     mapping(uint256 => uint256) public _ticketPrice;
+    
+    //Mapping from token name to token ID
+    mapping(string => uint) public nameToId; 
+
+    //Mapping from token ID to token name
+    mapping(uint => string) public idToName;  
 
     event TokentypeCreated(uint256 id, uint256 amount);
 
