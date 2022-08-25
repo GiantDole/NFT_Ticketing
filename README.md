@@ -33,5 +33,5 @@ In order to protect the users, the ticket system provider (us) can constrain the
 To implement those functionalities, we'll use 3 classes of smart contracts: the event manager, ERC1155 events, and a marketplace. 
 
 The event manager offers verified event organizers the possibility to create, manage, and cancel events. It functions as interface for us and the organizers to manage and keep track of events and, mostly, to interact with events. 
-Every time an organizer creates an event, an ERC1155 is deployed owned by the event organizer. Nevertheless, some of the functionality is access restricted to the event manager smart contract to prevent the owner of stealing the escrow or other unfair activities. 
+Every time an organizer creates an event, an ERC1155 is deployed owned by the manager contract. This is to prevent the owner of stealing the escrow or fron other unfair activities. 
 The marketplace is specifically designed to trade NFTs representing tickets. Nothing keeps users from trading their tickets elsewhere, but through this marketplace smart contract we can ensure other non-web3 users to safely purchase unexpired and unused tickets.
