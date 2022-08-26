@@ -2,23 +2,27 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
 /**
- * @title A smart contract representing tickets for an event
+ * @title A smart contract managing tickets for an event
  * @author Adrian Koegl
  * @notice token ids map to different ticket types; contract is owned by Ticket Manager contract
  * @dev own the payment token as escrow for the tickets
- * 
+ * Include total ticket number ?
  */
 
-contract ERC1155Ticketing is ERC1155, Ownable {
+contract ERC1155Ticketing is ERC1155Supply, IERC1155Receiver, Ownable {
 
     //The token that will be used to pay these tickets
     IERC20 paymentToken;
 
     //Mapping from token ID to its total amount of minted tokens
+    /**
+     * @dev same functionality as ERC1155Supply.sol
+     */
     mapping(uint256 => uint256) private _amounts;
 
     //Mapping of token ID to its price per token/ticket
@@ -100,5 +104,25 @@ contract ERC1155Ticketing is ERC1155, Ownable {
     ) public onlyOwner {
         _burn(msg.sender, id, amount);
         _amounts[id] -= amount;
+    }
+
+    function onERC1155Received(
+        address operator,
+        address from,
+        uint256 id,
+        uint256 value,
+        bytes calldata data
+    ) external pure returns (bytes4) {
+        return 0xf23a6e61;
+    }
+
+    function onERC1155BatchReceived(
+        address operator,
+        address from,
+        uint256[] calldata ids,
+        uint256[] calldata values,
+        bytes calldata data
+    ) external pure returns (bytes4) {
+        return 0xbc197c81;
     }
 }
