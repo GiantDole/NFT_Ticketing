@@ -35,3 +35,9 @@ To implement those functionalities, we'll use 3 classes of smart contracts: the 
 The event manager offers verified event organizers the possibility to create, manage, and cancel events. It functions as interface for us and the organizers to manage and keep track of events and, mostly, to interact with events. 
 Every time an organizer creates an event, an ERC1155 is deployed owned by the manager contract. This is to prevent the owner of stealing the escrow or fron other unfair activities. 
 The marketplace is specifically designed to trade NFTs representing tickets. Nothing keeps users from trading their tickets elsewhere, but through this marketplace smart contract we can ensure other non-web3 users to safely purchase unexpired and unused tickets.
+
+## Structure
+
+The event manager contract is the owner of every ERC1155Ticket contract. Event organizers manage their events, i.e., create ticket types, mint tickets, cancel tickets, burn tickets, ... through the manager contract. 
+
+Tickets are minted into the ERC1155Ticket contract. From there, the event organizer can burn tickets without constraints so far. Only after a user has purchased a ticket the organizer can only cancel the ticket which implies an immediate refund.
