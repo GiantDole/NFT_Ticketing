@@ -14,16 +14,13 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
  * Include total ticket number ?
  */
 
+//TODO: implement to first create a token type before minting tickets
+//Where do we define the price?
+
 contract ERC1155Ticketing is ERC1155Supply, IERC1155Receiver, Ownable {
 
     //The token that will be used to pay these tickets
     IERC20 paymentToken;
-
-    //Mapping from token ID to its total amount of minted tokens
-    /**
-     * @dev same functionality as ERC1155Supply.sol
-     */
-    mapping(uint256 => uint256) private _amounts;
 
     //Mapping of token ID to its price per token/ticket
     mapping(uint256 => uint256) public _ticketPrice;
@@ -43,24 +40,17 @@ contract ERC1155Ticketing is ERC1155Supply, IERC1155Receiver, Ownable {
         uint256 id, 
         uint256 amount
     ) public onlyOwner {
-        if(_amounts[id] == 0) {
+        if(totalSupply(id) == 0) {
             emit TokentypeCreated(id, amount);
         }
         _mint(address(this), id, amount, "");
-        _amounts[id] += amount;
     }
 
     function mintBatch(
         uint256[] memory ids, 
         uint256[] memory amounts
     ) public onlyOwner {
-        address addr = address(this);
-
-        _mintBatch(addr, ids, amounts, "");
-        
-        for (uint256 i = 0; i < ids.length; i++) {
-            _amounts[ids[i]] += amounts[i];
-        }
+        _mintBatch(address(this), ids, amounts, "");
     }
 
     /**
@@ -91,21 +81,34 @@ contract ERC1155Ticketing is ERC1155Supply, IERC1155Receiver, Ownable {
             "Couldn't perform token payment"
         );
         _burn(addr, id, 1);
-        _amounts[id] -= 1;
     }
 
     /**
-     * @notice tickets have to be owned by the manager contract to burn them
-     * @dev only the event organizer can burn tickets of one type that they own
+     * @notice tickets have to be owned by this contract to burn them
+     * @dev only the event organizer can burn tickets through the manager contract that have not been sold yet
      */
     function burn(
         uint256 id,
         uint256 amount
     ) public onlyOwner {
-        _burn(msg.sender, id, amount);
-        _amounts[id] -= amount;
+        _burn(address(this), id, amount);
     }
 
+    /**
+     * @notice several ticket types owned by this contract can be reduced in their amount
+     * 
+     */
+    function burnBatch(
+        uint256[] memory ids,
+        uint256[] memory amounts
+    ) public onlyOwner {
+        _burnBatch(address(this), ids, amounts);
+    }
+
+
+    /**
+     * @dev we need the input parameters to match IERC1155Receiver's signature, right? Without the IERC1155Receiver receiving tokens will fail.
+     */
     function onERC1155Received(
         address operator,
         address from,
