@@ -23,9 +23,9 @@ contract ERC1155Ticketing is ERC1155Supply, IERC1155Receiver, Ownable {
     IERC20 paymentToken;
 
     //Mapping of token ID to its price per token/ticket
-    mapping(uint256 => uint256) public _ticketPrice;
+    mapping(uint256 => uint256) public ticketPrice;
 
-    event TokentypeCreated(uint256 id, uint256 amount);
+    event TokentypeCreated(uint256 id, uint256 amount, uint256 price);
 
 
     constructor(address token_) ERC1155("https://example.com/{id}.json") {
@@ -38,24 +38,34 @@ contract ERC1155Ticketing is ERC1155Supply, IERC1155Receiver, Ownable {
      */
     function mint(
         uint256 id, 
-        uint256 amount
+        uint256 amount,
+        uint256 price
     ) public onlyOwner {
         if(totalSupply(id) == 0) {
-            emit TokentypeCreated(id, amount);
+            ticketPrice[id] = price;
+            emit TokentypeCreated(id, amount, price);
         }
         _mint(address(this), id, amount, "");
     }
 
     function mintBatch(
         uint256[] memory ids, 
-        uint256[] memory amounts
+        uint256[] memory amounts,
+        uint256[] memory prices
     ) public onlyOwner {
+        require(ids.length == prices.length, "The prices array has to be of equal length!");
+        for (uint256 i = 0; i < ids.length; i++) {
+            if(totalSupply(ids[i]) == 0) {
+                ticketPrice[ids[i]] = prices[i];
+                emit TokentypeCreated(ids[i], amounts[i], prices[i]);
+            }
+        }
         _mintBatch(address(this), ids, amounts, "");
     }
 
     /**
      * @notice Users can buy tickets using this function
-     * @dev the purchase has to be meeting the constraints set by the organizer
+     * @dev User needs to approve this contract first on the token contract
      */
     function purchaseTicket(
         address to, 
@@ -63,9 +73,10 @@ contract ERC1155Ticketing is ERC1155Supply, IERC1155Receiver, Ownable {
         uint256 amount
     ) public {
         require(
-            paymentToken.transferFrom(msg.sender, address(this), _ticketPrice[id])
+            paymentToken.transferFrom(msg.sender, address(this), ticketPrice[id] * amount),
+            "Couldn't transfer tokens to the ticket contract to purchase tickets"
         );
-        safeTransferFrom(address(this), to, id, amount, "");
+        _safeTransferFrom(address(this), to, id, amount, "");
     }
 
     /**
@@ -74,13 +85,14 @@ contract ERC1155Ticketing is ERC1155Supply, IERC1155Receiver, Ownable {
      */
     function cancel(
         address addr,
-        uint256 id
+        uint256 id,
+        uint256 amount
     ) public onlyOwner {
         require(
-            paymentToken.transferFrom(address(this), addr, _ticketPrice[id]),
-            "Couldn't perform token payment"
+            paymentToken.transferFrom(address(this), addr, ticketPrice[id] * amount),
+            "Couldn't perform token payment to cancel tickets"
         );
-        _burn(addr, id, 1);
+        _burn(addr, id, amount);
     }
 
     /**
@@ -128,4 +140,5 @@ contract ERC1155Ticketing is ERC1155Supply, IERC1155Receiver, Ownable {
     ) external pure returns (bytes4) {
         return 0xbc197c81;
     }
+
 }
