@@ -41,3 +41,9 @@ The marketplace is specifically designed to trade NFTs representing tickets. Not
 The event manager contract is the owner of every ERC1155Ticket contract. Event organizers manage their events, i.e., create ticket types, mint tickets, cancel tickets, burn tickets, ... through the manager contract. 
 
 Tickets are minted into the ERC1155Ticket contract. From there, the event organizer can burn tickets without constraints so far. Only after a user has purchased a ticket the organizer can only cancel the ticket which implies an immediate refund.
+
+## Check-in
+
+Managing check-in solely on-chain would allow for the following attack vector: A ticket owner could check themselves in and share their credentials such that another person could check in as well until it is finally captured on chain.
+
+Therefore, we suggest the following method: For user authenticity, the user signs their ticket which generates a QR Code to check in. Through this QR code we can verify that the user has access to their wallet private key. To avoid the attack vector mentioned above, it is necessary to register a check-in in a centralized way until it is finalized on-chain.
