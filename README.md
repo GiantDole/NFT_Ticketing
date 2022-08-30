@@ -40,7 +40,7 @@ The marketplace is specifically designed to trade NFTs representing tickets. Not
 
 The event manager contract is the owner of every ERC1155Ticket contract. Event organizers manage their events, i.e., create ticket types, mint tickets, cancel tickets, burn tickets, ... through the manager contract. 
 
-Tickets are minted into the ERC1155Ticket contract. From there, the event organizer can burn tickets without constraints so far. Only after a user has purchased a ticket the organizer can only cancel the ticket which implies an immediate refund.
+Tickets are minted into the ERC1155Ticket contract. Organizers have to first create a ticket type by setting its capacity, price, and URL. These types are static and cannot be altered except for the capacity. This is to ensure price stability of a ticket type for fair refund etc. Nevertheless, an organizer can create a new ticket type with the same URI and change the capacity of an existing one. In the ERC1155, the event organizer can also burn tickets without constraints so far. Only after a user has purchased a ticket the organizer can only cancel the ticket with immediate refund.
 
 ## Check-in
 
