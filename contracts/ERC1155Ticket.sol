@@ -15,6 +15,7 @@ import "./ERC2981Base.sol";
  * @dev potentially implement cancellation policy for the future
  * @dev limitation: the price has to be constant for a created ticket type (otherwise returning tickets won't work)
  * @dev implement withdraw constraints (centralized vs timestamp vs ...)
+ * @dev implement Pausable
  */
 
 
@@ -107,9 +108,12 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         uint256 amount
     ) external {
         require(
-            totalSupply(id) + amount <= _maxCap[id] &&
+            totalSupply(id) + amount <= _maxCap[id],
+            "Ticketing: Ticket type maximum capacity reached"
+        );
+        require(
             paymentToken.transferFrom(msg.sender, address(this), _ticketPrice[id] * amount),
-            "Ticketing: Ticket type not created, _maxCap reached, or payment failed"
+            "Ticketing: Payment failed"
         );
         _mint(to, id, amount, "");
     }
@@ -205,7 +209,6 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         _safeTransferFrom(address(this), to, id, amount, "");
     }
 
-
     /**
      * @dev we need the input parameters to match IERC1155Receiver's signature, right? Without the IERC1155Receiver receiving tokens will fail.
      */
@@ -271,7 +274,6 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         require(value <= max_royalties, 'ERC2981Royalties: Too high');
         _royalties = RoyaltyInfo(recipient, uint24(value));
     }
-
 
     function royaltyInfo(uint256, uint256 value)
         external
