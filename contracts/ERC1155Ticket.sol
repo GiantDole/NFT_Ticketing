@@ -14,11 +14,9 @@ import "./ERC2981Base.sol";
  * @dev own the payment token as escrow for the tickets
  * @dev potentially implement cancellation policy for the future
  * @dev limitation: the price has to be constant for a created ticket type (otherwise returning tickets won't work)
- * Include total ticket number ?
+ * @dev implement withdraw constraints (centralized vs timestamp vs ...)
  */
 
-//TODO: withdraw
-//TODO: user cancel + policies / timestamp
 
 contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownable {
 
@@ -184,10 +182,15 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         _burnBatch(address(this), ids, amounts);
     }
 
+    /**
+     * @notice the organizer can withdraw the available funds from ticket purchases
+     * @dev only accessible by organizer
+     * @dev no constraints for withdraw are set yet
+     */
     function withdraw(
         address to
     ) external onlyOwner {
-
+        paymentToken.transferFrom(address(this), to, paymentToken.balanceOf(address(this)));
     }
 
     /**
