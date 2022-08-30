@@ -188,7 +188,7 @@ describe("Testing ERC1155 Ticketing", () => {
                 expect(userBalance).to.eq(amount1);
             })
 
-            it("The user doesn't receive tickets w/ unsuccessful payment", async () => {
+            it("The user doesn't receive tickets after payment", async () => {
                 const amount = 3;
                 await mockContract.mock.transferFrom.returns(false);
                 await expect(ticketContract.connect(user1).purchaseTicket(user1.address, tokenID1, amount))
