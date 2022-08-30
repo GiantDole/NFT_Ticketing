@@ -8,48 +8,51 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract Manager is Ownable{
 
     address private admin;
-
-    mapping(address => Event[]) public events;
-    mapping(address => Event[]) public ticketHolders;
+    uint256 private eventId;
+    
     //how many tickets an address owns
-    mapping(address => Event => uint256) public nbrTicketsOwned;
+    mapping(address => mapping(uint256 => bool)) public eventIdByCreator;
+    mapping(uint256 => ERC1155Ticketing) eventIdToTicket;
+    mapping(address => bool) authorizedCreator;
+    
+    event TicketMinted(uint256 indexed _eventId, uint256 indexed _ticketId, address _buyer, uint256 _amt);
+    event TicketBurned(uint256 indexed _eventId, uint256 indexed _ticketId, address _burner, uint256 _amt);
 
     struct Event{
         uint256 id;
         address eventOwner;
-        ERC1155Ticketing eventToken; 
+        ERC1155Ticketing ticket; 
         uint256 ticketCap; 
+        uint256 creationTime;
+        uint256 closingTime;
     }
 
-    modifier onlyEventOwner(uint256 _id){
-        Event[] memory userEvents = events[msg.sender];
-        require(userEvents.length > 0, "not an event owner");
-        for (uint256 i; i < userEvents.length; i++){
-            if (userEvents[i].id == _id){
-                _;
-            } else {
-                revert("not an event owner");
-            }
-        }
+    modifier onlyEventCreator(){
+        require(authorizedCreator[msg.sender], "not authorzed to create event");
+        _;
+    }
+
+    modifier onlyEventOwner(uint256 _eventId){
+        require(eventIdToTicket[msg.sender] != 0, "no event");
+        _;
     }
 
     modifier onlyAdmin() {
-        require(msg.sender == admin, "not the admin");
+        require(msg.sender == admin || msg.sender == owner, "not the admin");
+        _;
     }
 
-    modifier onlyTicketHolder(uint256 _id){
-        require(ticketHolders[msg.sender].length > 0, "not a ticket holder");
-        for (uint256 i; i < ticketHolders[msg.sender].length; i++){
-            if (ticketHolders[msg.sender][i].id == _id){
-                _;
-            } else {
-                revert("not a ticket holder");
-            }
-        }
+    modifier onlyTicketHolder(uint256 _eventId, uint256 _id){
+        require(eventIdToTicket[_eventId].balanceOf(msg.sender, _id) > 0, "not a ticket holder");
+        _;
     }
 
     function setAdmin(address _admin) onlyOwner public {
         admin = _admin;
+    }
+
+    function generateEventId() internal returns (uint256) {
+        return eventId ++;
     }
     
     /*
@@ -60,49 +63,81 @@ contract Manager is Ownable{
     _ids - IDs the ERC1155 token should contain
     _name - Names each ID should map to. Case-sensitive.
     */
-    function createEvent(
-        address _token, 
-        string memory _uri, 
-        uint24 _royalties,
-        uint256 _id, 
-        uint256 _maxCap, 
-        uint256 _price) internal returns (ERC1155Ticketing) {
-
-        ERC1155Ticketing ticket = new ERC1155Ticketing(_token, _uri, _royalties);
-        ticket.createTicketType(_id, _maxCap, _price, _uri);
+    function createEvent(uint _weeks) internal returns (Event memory) {
+        
+        uint256 eventId = generateEventId();
 
         Event memory userEvent = Event({
-            id: _id,
+            id: eventId,
             eventOwner: msg.sender,
-            eventToken: ticket,
-            ticketCap: _maxCap
+            eventToken: ,
+            ticketCap: 0, 
+            block.timestamp, 
+            block.timestamp + weeks
         });
 
-        events[msg.sender].push(userEvent);
-
-
-        return ticket;
-    }
-    //every erc1155 is one event
-    //tokenid can appear more than once across events
-    //give event unique ID
-
-
-    function buyTicket(Event memory _event) public payable {
-        _event.eventToken.mint(msg.sender, _event.id, msg.value);
-        ticketHolders[msg.sender].push(_event);
+        eventIdByCreator[msg.sender][eventId] = true;
+        return userEvent;
     }
 
-    function batchBuyTickets(Event[] memory _events, uint256[] memory _amounts) public payable {
-        for (uint256 i; i < _events.length; i++){
-            buyTicket(_events[i]);
+    function addTicketToEvent(
+        uint256 _eventId,
+        address paymentToken_, 
+        uint24 royalties_,
+        uint256 id,
+        uint256 maxCap_,
+        uint256 price,
+        string memory tokenURI_) public onlyEventOwner(_eventId) {
+        ERC1155Ticketing memory ticket = ERC1155Ticketing(
+            paymentToken_,
+            tokenURI_, 
+            royalties_
+        );
+        ticket.createTicketType(id, maxCap_, price, tokenURI_);
+        eventIdToTicket[_eventId] = id;
+    }
+
+    function addAdditonalTicket(
+        uint256 _eventId, 
+        uint256 id, 
+        uint256 maxCap_, 
+        uint256 price, 
+        string memory tokenURI_) public onlyEventOwner(_eventId) {
+    
+        eventIdToTicket[_eventId].createTicketType(id, maxCap_, price, tokenURI_);
+    }
+    
+    
+    function buyTicket(uint256 _eventId, uint256 _id, uint256 _amt) public {
+        eventIdToTicket[_eventId].mint(_id, _amt);
+        emit TicketMinted(_eventId, _id, msg.sender, _amt);
+    }
+
+    function batchBuyTickets(uint256[] memory _eventIds, uint256[] memory _ticketIds, uint256[] memory _amounts) public {
+        for (uint256 i; i < _eventIds.length; i++){
+            eventIdToTicket[_eventIds[i]].mint(_ticketIds[i], _amounts[i]);
+            emit TicketMinted(_eventIds, _ticketIds[i], msg.sender, _amounts[i]); 
         }
     }
 
-    function cancelTicket(Event memory _event) public onlyTicketHolder(_event.id) {
-        _event.eventToken.cancel(msg.sender, _event.id, nbrTicketsOwned[msg.sender][_event]);
-        ticketHolders[msg.sender].remove(_event);
+    function cancelTicket(uint256 _eventId, uint256 _id, uint256 _amt) public onlyTicketHolder(_eventId, _id) {
+        //check for timelock
+        eventIdToTicket[_eventId].burn(_id);
+        emit TicketBurned(_eventId, _id, msg.sender, _amt);
     }
+
+    function cancelEvent(uint256 _eventId) public onlyEventOwner(_eventId) {
+        //check for timelock
+        eventIdToTicket[_eventId].burnAll();
+        eventIdByCreator[msg.sender][_eventId] = false;
+    }
+
+    function withdrawProfits(uint256 _eventId) public onlyEventOwner(_eventId) {
+        eventIdToTicket[_eventId].withdraw();
+    }
+
+    function withdrawCanceledTicket();
+
 
 }
 

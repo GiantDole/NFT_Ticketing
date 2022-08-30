@@ -23,6 +23,8 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
     //The token that will be used to pay these tickets
     IERC20 paymentToken;
 
+    uint256 public tokenId;
+
     //The organizer can set the royalties to a max of 3000 = 30 %
     uint public constant max_royalties = 3000;
 
@@ -40,6 +42,7 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
     mapping(uint256 => uint256) private _maxCap;
 
     event TokentypeCreated(uint256 id, uint256 capacity, uint256 price, string uri);
+    
 
     /**
      * @notice this is the IPFS address for the event alone
@@ -71,6 +74,7 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
             _maxCap[id] == 0 && maxCap_ > 0,
             "Ticketing: Ticket type exists already or the maximum capacity is not greater than 0"
         );
+        tokenId = id;
         _maxCap[id] = maxCap_;
         _tokenURI[id] = tokenURI_;
         emit TokentypeCreated(id, maxCap_, price, tokenURI_);
@@ -105,7 +109,7 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         address to,
         uint256 id, 
         uint256 amount
-    ) external {
+    ) external payable{
         require(
             totalSupply(id) + amount <= _maxCap[id] &&
             paymentToken.transferFrom(msg.sender, address(this), _ticketPrice[id] * amount),
