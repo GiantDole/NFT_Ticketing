@@ -5,7 +5,7 @@ pragma solidity ^0.8.9;
 import "./ERC1155Ticket.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Manager is Ownable{
+contract TicketManager is Ownable{
     
     //how many tickets an address owns
     mapping(address => mapping(uint256 => bool)) private eventIdByCreator;
