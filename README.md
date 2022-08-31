@@ -54,11 +54,26 @@ Therefore, we suggest the following method: For user authenticity, the user sign
 Metadata for one ERC1155 / Event. fee_recipient refers to the address that receives the royalties. This should be set to the contract address of the ERC1155 so the organizer can withdraw those royalties there.
 ```
 {
-  "name": "NFT Contract",
-  "description": "Really cool description about my art",
-  "image": "https://openseacreatures.io/image.png", # Link to collection image
-  "external_link": "https://openseacreatures.io", # Link to website
-  "seller_fee_basis_points": 100, # Indicates a 1% seller fee.
-  "fee_recipient": "0xA97F337c39cccE66adfeCB2BF99C1DdC54C2D721" # Where seller fees will be paid to.
+  "id": 15,
+  "name": "Festival",
+  "description": "Reggae and Techno",
+  "date": "08/25/2022",
+  "image": "ipfs://...", # Link to collection image
+  "external_link": "https://festival.io", # Link to website
+  "royalties": 100, # Indicates a 1% seller fee
+}
+```
+
+### Ticket metadata
+Metadata for a ticket type. A ticket type can have a parent ticket type, e.g., when a new id is generated for the same ticket type after a price increase. 
+```
+{
+  "id": 5,
+  "event_id": 15,
+  "parent_id": None
+  "name": "Gold Ticket",
+  "description": "VIP Entrance",
+  "image": "ipfs://...", # Link to collection image
+  "external_link": "https://festival.io/user", # Link to schedule
 }
 ```
