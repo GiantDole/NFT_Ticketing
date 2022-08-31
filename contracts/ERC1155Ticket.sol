@@ -40,7 +40,7 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
     //Mapping of token ID to its maximum capacity
     mapping(uint256 => uint256) private _maxCap;
 
-    event TokentypeCreated(uint256 id, uint256 capacity, uint256 price, string uri);
+    event TokentypeCreated(uint256 indexed tokenId, uint256 capacity, uint256 price, string uri);
 
     /**
      * @notice this is the IPFS address for the event alone
