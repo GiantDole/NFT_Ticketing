@@ -6,7 +6,7 @@ import "@typechain/hardhat";
 import "solidity-coverage";
 import 'solidity-docgen';
 
-dotenv.config({ path: '../.env' });
+dotenv.config();
 
 
 const config: HardhatUserConfig = {
@@ -19,6 +19,12 @@ const config: HardhatUserConfig = {
       }
     },
   },
+  networks: {
+    mumbai: {
+      url: process.env.MUMBAI_RPC_URL,
+      accounts: [process.env.PRIVATE_KEY!],
+    }
+  }
 };
 
 export default config;
