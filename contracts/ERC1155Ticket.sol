@@ -22,7 +22,7 @@ import "./ERC2981Base.sol";
 contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownable {
 
     //The token that will be used to pay these tickets
-    IERC20 paymentToken;
+    IERC20 private paymentToken;
 
     //The organizer can set the royalties to a max of 3000 = 30 %
     uint public constant max_royalties = 3000;
@@ -287,5 +287,9 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         RoyaltyInfo memory royalties = _royalties;
         receiver = royalties.recipient;
         royaltyAmount = (value * royalties.amount) / 10000;
+    }
+
+    function getPaymentTokenAddress() public view returns(address) {
+        return address(paymentToken);
     }
 }
