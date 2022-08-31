@@ -35,3 +35,30 @@ To implement those functionalities, we'll use 3 classes of smart contracts: the 
 The event manager offers verified event organizers the possibility to create, manage, and cancel events. It functions as interface for us and the organizers to manage and keep track of events and, mostly, to interact with events. 
 Every time an organizer creates an event, an ERC1155 is deployed owned by the manager contract. This is to prevent the owner of stealing the escrow or fron other unfair activities. 
 The marketplace is specifically designed to trade NFTs representing tickets. Nothing keeps users from trading their tickets elsewhere, but through this marketplace smart contract we can ensure other non-web3 users to safely purchase unexpired and unused tickets.
+
+## Structure
+
+The event manager contract is the owner of every ERC1155Ticket contract. Event organizers manage their events, i.e., create ticket types, mint tickets, cancel tickets, burn tickets, ... through the manager contract. 
+
+Tickets are minted into the ERC1155Ticket contract. Organizers have to first create a ticket type by setting its capacity, price, and URL. These types are static and cannot be altered except for the capacity. This is to ensure price stability of a ticket type for fair refund etc. Nevertheless, an organizer can create a new ticket type with the same URI and change the capacity of an existing one. In the ERC1155, the event organizer can also burn tickets without constraints so far. Only after a user has purchased a ticket the organizer can only cancel the ticket with immediate refund.
+
+## Check-in
+
+Managing check-in solely on-chain would allow for the following attack vector: A ticket owner could check themselves in and share their credentials such that another person could check in as well until it is finally captured on chain.
+
+Therefore, we suggest the following method: For user authenticity, the user signs their ticket which generates a QR Code to check in. Through this QR code we can verify that the user has access to their wallet private key. To avoid the attack vector mentioned above, it is necessary to register a check-in in a centralized way until it is finalized on-chain.
+
+## Example metadata
+
+### Event metadata
+Metadata for one ERC1155 / Event. fee_recipient refers to the address that receives the royalties. This should be set to the contract address of the ERC1155 so the organizer can withdraw those royalties there.
+```
+{
+  "name": "NFT Contract",
+  "description": "Really cool description about my art",
+  "image": "https://openseacreatures.io/image.png", # Link to collection image
+  "external_link": "https://openseacreatures.io", # Link to website
+  "seller_fee_basis_points": 100, # Indicates a 1% seller fee.
+  "fee_recipient": "0xA97F337c39cccE66adfeCB2BF99C1DdC54C2D721" # Where seller fees will be paid to.
+}
+```

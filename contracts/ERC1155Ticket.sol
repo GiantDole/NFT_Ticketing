@@ -15,6 +15,7 @@ import "./ERC2981Base.sol";
  * @dev potentially implement cancellation policy for the future
  * @dev limitation: the price has to be constant for a created ticket type (otherwise returning tickets won't work)
  * @dev implement withdraw constraints (centralized vs timestamp vs ...)
+ * @dev implement Pausable
  */
 
 
@@ -22,8 +23,6 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
 
     //The token that will be used to pay these tickets
     IERC20 paymentToken;
-
-    uint256 public tokenId;
 
     //The organizer can set the royalties to a max of 3000 = 30 %
     uint public constant max_royalties = 3000;
@@ -42,7 +41,6 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
     mapping(uint256 => uint256) private _maxCap;
 
     event TokentypeCreated(uint256 id, uint256 capacity, uint256 price, string uri);
-    
 
     /**
      * @notice this is the IPFS address for the event alone
@@ -50,7 +48,7 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
     constructor(address token_, string memory uri_, uint24 royalties_) ERC1155(uri_) {
         require(
             royalties_ <= max_royalties,
-            "Ticketing: royalties are above max!"
+            "Ticketing: set royalties are above the maximum!"
         );
         _setRoyalties(address(this), royalties_);
         paymentToken = IERC20(token_);
@@ -74,7 +72,6 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
             _maxCap[id] == 0 && maxCap_ > 0,
             "Ticketing: Ticket type exists already or the maximum capacity is not greater than 0"
         );
-        tokenId = id;
         _maxCap[id] = maxCap_;
         _tokenURI[id] = tokenURI_;
         emit TokentypeCreated(id, maxCap_, price, tokenURI_);
@@ -109,11 +106,14 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         address to,
         uint256 id, 
         uint256 amount
-    ) external payable{
+    ) external {
         require(
-            totalSupply(id) + amount <= _maxCap[id] &&
+            totalSupply(id) + amount <= _maxCap[id],
+            "Ticketing: Ticket type maximum capacity reached"
+        );
+        require(
             paymentToken.transferFrom(msg.sender, address(this), _ticketPrice[id] * amount),
-            "Ticketing: Ticket type not created, _maxCap reached, or payment failed"
+            "Ticketing: Payment failed"
         );
         _mint(to, id, amount, "");
     }
@@ -129,7 +129,7 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         address to,
         uint256[] memory ids, 
         uint256[] memory amounts
-    ) external onlyOwner {
+    ) external {
         uint256 total = 0;
         for (uint256 i = 0; i < ids.length; i++) {
             require( 
@@ -209,7 +209,6 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         _safeTransferFrom(address(this), to, id, amount, "");
     }
 
-
     /**
      * @dev we need the input parameters to match IERC1155Receiver's signature, right? Without the IERC1155Receiver receiving tokens will fail.
      */
@@ -275,7 +274,6 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         require(value <= max_royalties, 'ERC2981Royalties: Too high');
         _royalties = RoyaltyInfo(recipient, uint24(value));
     }
-
 
     function royaltyInfo(uint256, uint256 value)
         external
