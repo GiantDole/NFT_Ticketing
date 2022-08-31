@@ -20,6 +20,21 @@ export class EventsController {
     return this.eventsService.create(createEventDto);
   }
 
+  @Get('/listEvents')
+  listEvents() {
+    return this.eventsService.list();
+  }
+
+  @Get('listEvents/:id/ticketTypes')
+  listEventsByTicketType(@Param('id') id: string) {
+    return this.eventsService.listEventsByTicketType(+id);
+  }
+
+  @Get('listEvents/:id')
+  listEventByID(@Param('id') id: string) {
+    return this.eventsService.listEventById(+id);
+  }
+
   @Get()
   findAll() {
     return this.eventsService.findAll();

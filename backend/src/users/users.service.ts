@@ -4,6 +4,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
+  ownedTickets(userId: number) {
+    return `this is the user ${userId}'s owned tickets`;
+  }
+
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }
