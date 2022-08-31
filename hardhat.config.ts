@@ -10,7 +10,6 @@ dotenv.config({ path: '../.env' });
 
 
 const config: HardhatUserConfig = {
-  defaultNetwork: "mumbai",
   solidity: {
     version: "0.8.9",
     settings: {
@@ -20,13 +19,6 @@ const config: HardhatUserConfig = {
       }
     },
   },
-  paths: {tests: "matic"},
-  networks: {
-    mumbai: {
-      url: process.env.MUMBAI_RPC_URL,
-      accounts: [process.env.PRIVATE_KEY!]
-    },
-  }
 };
 
 export default config;
