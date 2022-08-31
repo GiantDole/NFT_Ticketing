@@ -62,3 +62,10 @@ Metadata for one ERC1155 / Event. fee_recipient refers to the address that recei
   "fee_recipient": "0xA97F337c39cccE66adfeCB2BF99C1DdC54C2D721" # Where seller fees will be paid to.
 }
 ```
+
+
+## Launch Web App
+
+cd app
+npm run dev
+App is available under http://localhost:3000

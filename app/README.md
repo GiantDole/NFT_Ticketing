@@ -1,4 +1,3 @@
-# WalletConnect Example Dapp
 
 ## Develop
 
