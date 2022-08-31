@@ -10,12 +10,21 @@ contract TicketManager is AccessControl{
     bytes32 public constant CREATOR_ROLE = keccak256("EVENT_CREATOR_ROLE");
     
     mapping(uint256 => address) private eventIdToTicket;
-    mapping(address => bool) private authorizedCreator;
     
     event EventCreated(uint256 indexed _eventId, address _contractAddress, string _uri);
 
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(CREATOR_ROLE, msg.sender);
+    }
+
+    modifier onlyAdminorOrganizer(uint eventID) {
+        require(
+            hasRole(keccak256(abi.encodePacked(eventID)), msg.sender) ||
+            hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
+            ""
+        );
+        _;
     }
     
     /*
@@ -93,7 +102,7 @@ contract TicketManager is AccessControl{
         uint256 _ticketID, 
         uint256 _amt) 
     public {
-        ERC1155Ticketing(eventIdToTicket[_eventID]).mint(to, _ticketID, _amt);
+        ERC1155Ticketing(eventIdToTicket[_eventID]).mint(to, msg.sender, _ticketID, _amt);
     }
 
     function batchBuyTickets(
@@ -102,7 +111,7 @@ contract TicketManager is AccessControl{
         uint256[] memory _ticketIds, 
         uint256[] memory _amounts
     ) external {
-        ERC1155Ticketing(eventIdToTicket[_eventID]).mintBatch(to, _ticketIds, _amounts);
+        ERC1155Ticketing(eventIdToTicket[_eventID]).mintBatch(to, msg.sender, _ticketIds, _amounts);
     }
 
     function getEventByID(
@@ -115,18 +124,31 @@ contract TicketManager is AccessControl{
         address[] memory creators
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         for(uint i=0; i<creators.length; i++) {
-            authorizedCreator[creators[i]]=true;
+            _grantRole(CREATOR_ROLE, creators[i]);
         }
     }
 
+    ///@dev taking bytes32 input is more efficient
     function addEventOrganizer(
         uint eventID_,
         address[] memory organizers
-    ) external onlyRole(keccak256(abi.encodePacked(eventID_))) {
+    ) external onlyAdminorOrganizer(eventID_) {
+        bytes32 newRole = keccak256(abi.encodePacked(eventID_));
         for(uint i=0; i < organizers.length; i++) {
-
+            _grantRole(newRole, organizers[i]);
         }
     }
 
+    function getRoleKeccak(uint eventID_) external pure returns(bytes32) {
+        return keccak256(abi.encodePacked(eventID_));
+    }
+
+    function getCreatorKeccak() external pure returns(bytes32) {
+        return CREATOR_ROLE;
+    }
+
+    function getAdminKeccak() external pure returns(bytes32) {
+        return DEFAULT_ADMIN_ROLE;
+    }
 }
 
