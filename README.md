@@ -77,3 +77,14 @@ Metadata for a ticket type. A ticket type can have a parent ticket type, e.g., w
   "external_link": "https://festival.io/user", # Link to schedule
 }
 ```
+
+### Examples
+Event image IPFS URL: ipfs://bafybeiavffno6sx352s2vbouh25pihnzxkncvo4fgfi5enfwnmt25jnidi
+Event metadata URL: ipfs://bafkreih6msixx2aoqllqj62mgnxmliajdlwte4erfyxtkcpb5tyfvzoxku
+
+
+Deployed on Polygon Mumbai testnet contracts:
+
+MANAGER_CONTRACT=0xe46aa7eF2e23210a314c7f72bC1E720f25660E5E
+TOKEN_CONTRACT=0x014E6cb6f7c846581538a5ec49C5b32E64c90978
+EVENT_CONTRACT=0x3bf5f74A9be4551A7eAAFC375BBd779f8DAe2424 (uses the metadata URL above)
