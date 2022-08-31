@@ -84,7 +84,7 @@ Metadata for a ticket type. A ticket type can have a parent ticket type, e.g., w
 }
 ```
 
-### Examples
+## Examples
 Event image IPFS URL: ipfs://bafybeiavffno6sx352s2vbouh25pihnzxkncvo4fgfi5enfwnmt25jnidi
 Event metadata URL: ipfs://bafkreih6msixx2aoqllqj62mgnxmliajdlwte4erfyxtkcpb5tyfvzoxku
 
