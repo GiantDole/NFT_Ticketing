@@ -56,6 +56,7 @@ contract TicketManager is AccessControl{
         //eventIdByCreator[msg.sender][eventID_] = true;
         bytes32 newRole = keccak256(abi.encodePacked(eventID_));
         _grantRole(newRole, msg.sender);
+        emit EventCreated(eventID_, address(userEvent), uri_);
         return address(userEvent);
     }
 
