@@ -3,39 +3,20 @@
 pragma solidity ^0.8.9;
 
 import "./ERC1155Ticket.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract TicketManager is Ownable{
+contract TicketManager is AccessControl{
+
+    bytes32 public constant CREATOR_ROLE = keccak256("EVENT_CREATOR_ROLE");
     
-    //how many tickets an address owns
-    mapping(address => mapping(uint256 => bool)) private eventIdByCreator;
-    mapping(uint256 => ERC1155Ticketing) private eventIdToTicket;
+    mapping(uint256 => address) private eventIdToTicket;
     mapping(address => bool) private authorizedCreator;
     
-    //event TicketMinted(uint256 indexed _eventId, uint256 indexed _ticketId, address _buyer, uint256 _amt);
-    //event TicketBurned(uint256 indexed _eventId, uint256 indexed _ticketId, address _burner, uint256 _amt);
     event EventCreated(uint256 indexed _eventId, address _contractAddress, string _uri);
 
-    modifier onlyEventCreator(){
-        require(
-            authorizedCreator[msg.sender], 
-            "Manager: Not an authorized event creator"
-        );
-        _;
+    constructor() {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
-
-    modifier onlyEventOwner(uint256 _eventId){
-        require(
-            eventIdByCreator[msg.sender][_eventId], 
-            "Manager: Not an authorized manager for this event"
-        );
-        _;
-    }
-
-    //modifier onlyTicketHolder(uint256 _eventId, uint256 _id){
-    //    require(eventIdToTicket[_eventId].balanceOf(msg.sender, _id) > 0, "not a ticket holder");
-    //    _;
-    //}
     
     /*
     deployERC1155 - deploys a ERC1155 token with given parameters - returns deployed address
@@ -50,7 +31,7 @@ contract TicketManager is Ownable{
         address token_, 
         string memory uri_, 
         uint royalties_
-    ) external onlyEventCreator returns (address) {
+    ) external onlyRole(CREATOR_ROLE) returns (address) {
         require(
             address(eventIdToTicket[eventID_]) == address(0),
             "Manager: Event with this ID already exists"
@@ -62,8 +43,10 @@ contract TicketManager is Ownable{
             uint24(royalties_)
         );
 
-        eventIdToTicket[eventID_] = userEvent;
-        eventIdByCreator[msg.sender][eventID_] = true;
+        eventIdToTicket[eventID_] = address(userEvent);
+        //eventIdByCreator[msg.sender][eventID_] = true;
+        bytes32 newRole = keccak256(abi.encodePacked(eventID_));
+        _grantRole(newRole, msg.sender);
         return address(userEvent);
     }
 
@@ -73,8 +56,8 @@ contract TicketManager is Ownable{
         uint maxCap_, 
         uint price_,
         string memory tokenURI_
-    ) external onlyEventOwner(eventID_){
-        eventIdToTicket[eventID_].createTicketType(
+    ) external onlyRole(keccak256(abi.encodePacked(eventID_))){
+        ERC1155Ticketing(eventIdToTicket[eventID_]).createTicketType(
             ticketID_,
             maxCap_,
             price_,
@@ -86,21 +69,21 @@ contract TicketManager is Ownable{
         uint256 eventID_,
         uint256 ticketID_,
         uint256 maxCap_) 
-    public onlyEventOwner(eventID_) {
-        eventIdToTicket[eventID_].changeCap(
+    public onlyRole(keccak256(abi.encodePacked(eventID_))) {
+        ERC1155Ticketing(eventIdToTicket[eventID_]).changeCap(
             ticketID_, 
             maxCap_
         );
     }
 
     function addAdditonalTicket(
-        uint256 _eventId, 
+        uint256 _eventID, 
         uint256 id, 
         uint256 maxCap_, 
         uint256 price, 
         string memory tokenURI_)
-    public onlyEventOwner(_eventId) {
-        eventIdToTicket[_eventId].createTicketType(id, maxCap_, price, tokenURI_);
+    public onlyRole(keccak256(abi.encodePacked(_eventID))) {
+        ERC1155Ticketing(eventIdToTicket[_eventID]).createTicketType(id, maxCap_, price, tokenURI_);
     }
     
     
@@ -110,7 +93,7 @@ contract TicketManager is Ownable{
         uint256 _ticketID, 
         uint256 _amt) 
     public {
-        eventIdToTicket[_eventID].mint(to, _ticketID, _amt);
+        ERC1155Ticketing(eventIdToTicket[_eventID]).mint(to, _ticketID, _amt);
     }
 
     function batchBuyTickets(
@@ -119,7 +102,7 @@ contract TicketManager is Ownable{
         uint256[] memory _ticketIds, 
         uint256[] memory _amounts
     ) external {
-        eventIdToTicket[_eventID].mintBatch(to, _ticketIds, _amounts);
+        ERC1155Ticketing(eventIdToTicket[_eventID]).mintBatch(to, _ticketIds, _amounts);
     }
 
     function getEventByID(
@@ -130,36 +113,20 @@ contract TicketManager is Ownable{
 
     function authorizeCreator(
         address[] memory creators
-    ) external onlyOwner {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         for(uint i=0; i<creators.length; i++) {
             authorizedCreator[creators[i]]=true;
         }
     }
 
     function addEventOrganizer(
-        uint _eventID,
+        uint eventID_,
         address[] memory organizers
-    ) external onlyEventOwner(_eventID) {
-        for(uint i=0; i<organizers.length;i++) {
-            eventIdByCreator[organizers[i]][_eventID] = true;
+    ) external onlyRole(keccak256(abi.encodePacked(eventID_))) {
+        for(uint i=0; i < organizers.length; i++) {
+
         }
     }
-
-    // function cancelTicket(uint256 _eventId, uint256 _id, uint256 _amt) public onlyTicketHolder(_eventId, _id) {
-        //check for timelock
-    //    eventIdToTicket[_eventId].burn(_id);
-    //    emit TicketBurned(_eventId, _id, msg.sender, _amt);
-    //}
-
-    //function cancelEvent(uint256 _eventId) public onlyEventOwner(_eventId) {
-        //check for timelock
-    //    eventIdToTicket[_eventId].burnAll();
-    //    eventIdByCreator[msg.sender][_eventId] = false;
-    //}
-
-    //function withdrawProfits(uint256 _eventId) public onlyEventOwner(_eventId) {
-    //    eventIdToTicket[_eventId].withdraw();
-    //}
 
 }
 
