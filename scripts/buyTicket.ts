@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, Signer } from "ethers";
 import * as tokenJson from "../artifacts/contracts/ERC20Ticket.sol/ERC20Ticket.json";
 import * as managerJson from "../artifacts/contracts/TicketManager.sol/TicketManager.json";
 import 'dotenv/config'
@@ -41,18 +41,13 @@ async function tokenAllowance(
 }
 
 async function buyTicket(
-    signer:ethers.Wallet,
+    addr:string,
     managerAddress:string, 
     eventID: number,
     ticketID: number,
     amount: number
 ) {
-    const balanceBN = await signer.getBalance();
-    const balance = Number(ethers.utils.formatEther(balanceBN));
-    console.log(`Wallet balance ${balance}`);
-    if (balance < 0.01) {
-      throw new Error("Not enough ether");
-    }
+    const signer = setupProvider();
 
     const managerContract = new ethers.Contract(
         managerAddress,
@@ -61,22 +56,24 @@ async function buyTicket(
     );
     
     //Buyer must have allowed the ticket contract to use their tokens
-    await managerContract.buyTicket(
-        signer.address,
+    const unsignedTx = await managerContract.populateTransaction['buyTicket'](
+        addr,
         eventID,
         ticketID,
         amount
     );
+
+    return unsignedTx;
 }
 
 async function main() {
-    buyTicket(
-        setupSigner(),
+    console.log(await buyTicket(
+        setupSigner().address,
         managerAddr,
         5,
         10,
         1
-    )
+    ))
 }
 
 main().catch((error) => {
