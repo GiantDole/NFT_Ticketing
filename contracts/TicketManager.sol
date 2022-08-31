@@ -38,8 +38,8 @@ contract TicketManager is AccessControl{
     function createEvent(
         uint eventID_, 
         address token_, 
-        string memory uri_, 
-        uint royalties_
+        string memory uri_,
+        uint royalties_,
     ) external onlyRole(CREATOR_ROLE) returns (address) {
         require(
             address(eventIdToTicket[eventID_]) == address(0),

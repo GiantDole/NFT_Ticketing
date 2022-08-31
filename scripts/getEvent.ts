@@ -15,14 +15,6 @@ function setupSigner() {
     return wallet.connect(provider);
 }
 
-function convertStringArrayToBytes32(array: string[]) {
-    const bytes32Array = [];
-    for (let index = 0; index < array.length; index++) {
-      bytes32Array.push(ethers.utils.formatBytes32String(array[index]));
-    }
-    return bytes32Array;
-  }
-
 async function createEvent(
     signer:ethers.Wallet,
     managerAddress:string,
@@ -48,12 +40,6 @@ async function createEvent(
     const hasCreatorRole = await managerContract.hasRole(role, signer.address);
     if(!hasCreatorRole) {
         throw new Error("Provided signer does not have the creator role");
-    }
-
-    const test = await managerContract.getEventByID(eventID);
-    console.log(test);
-    if (test != ethers.constants.AddressZero) {
-        throw new Error("An event with this ID already exists!");
     }
 
     console.log(`Creating new event with ID ${eventID}`);

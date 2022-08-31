@@ -1,8 +1,7 @@
 import { ethers } from "ethers";
-import dotenv from "dotenv";
+import 'dotenv/config'
 import * as tokenJson from "../artifacts/contracts/ERC20Ticket.sol/ERC20Ticket.json";
 
-dotenv.config({ path: '../.env' });
 
 function setupProvider() {
   const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_RPC_URL);

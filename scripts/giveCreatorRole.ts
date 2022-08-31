@@ -8,7 +8,10 @@ function setupProvider() {
   return provider;
 }
 
-async function main() {
+async function giveCreatorRole(
+    managerAddress:string,
+    creator:string,
+) {
   const wallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC!);
   console.log(`Using address ${wallet.address}`);
   const provider = setupProvider();
@@ -19,17 +22,28 @@ async function main() {
   if (balance < 0.01) {
     throw new Error("Not enough ether");
   }
-  console.log("Deploying Token contract");
-  const tokenFactory = new ethers.ContractFactory(
+
+
+  const managerContract = new ethers.Contract(
+    managerAddress,
     managerJson.abi,
-    managerJson.bytecode,
     signer
   );
-  const tokenContract = await tokenFactory.deploy();
-  console.log("Awaiting confirmations");
-  await tokenContract.deployed();
-  console.log("Completed");
-  console.log(`Contract deployed at ${tokenContract.address}`);
+
+  console.log(`Giving creator rights to ${creator}`);
+  await managerContract.authorizeCreator([creator]);
+
+  const role = await managerContract.CREATOR_ROLE();
+  const hasCreatorRole = await managerContract.hasRole(role, signer.address);
+  console.log(`Now has creator rights: ${hasCreatorRole}`);
+}
+
+async function main() {
+    const creator = "0x4AdeF044692817daa6bB18CE1f8D3594EaBc6dC0";
+    giveCreatorRole(
+        process.env.MANAGER_CONTRACT!,
+        creator
+    );
 }
 
 main().catch((error) => {
