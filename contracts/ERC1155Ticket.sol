@@ -59,13 +59,13 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
      * @dev ticket types cannot be changed
      * @param id the token ID 
      * @param maxCap_ the maximum capacity available - can be changed
-     * @param price the ticket price in payment token - cannot be changed
+     * @param price_ the ticket price in payment token - cannot be changed
      * @param tokenURI_ the IPFS URI for the ticket type - cannot be changed
      */
     function createTicketType(
         uint256 id,
         uint256 maxCap_,
-        uint256 price,
+        uint256 price_,
         string memory tokenURI_
     ) external onlyOwner {
         require(
@@ -74,7 +74,8 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
         );
         _maxCap[id] = maxCap_;
         _tokenURI[id] = tokenURI_;
-        emit TokentypeCreated(id, maxCap_, price, tokenURI_);
+        _ticketPrice[id] = price_;
+        emit TokentypeCreated(id, maxCap_, price_, tokenURI_);
     }
 
     /**
@@ -104,15 +105,16 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
      */
     function mint(
         address to,
+        address payer,
         uint256 id, 
         uint256 amount
-    ) external {
+    ) external onlyOwner {
         require(
             totalSupply(id) + amount <= _maxCap[id],
             "Ticketing: Ticket type maximum capacity reached"
         );
         require(
-            paymentToken.transferFrom(msg.sender, address(this), _ticketPrice[id] * amount),
+            paymentToken.transferFrom(payer, address(this), _ticketPrice[id] * amount),
             "Ticketing: Payment failed"
         );
         _mint(to, id, amount, "");
@@ -127,9 +129,10 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
      */
     function mintBatch(
         address to,
+        address payer,
         uint256[] memory ids, 
         uint256[] memory amounts
-    ) external {
+    ) external onlyOwner {
         uint256 total = 0;
         for (uint256 i = 0; i < ids.length; i++) {
             require( 
@@ -139,7 +142,7 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
             total += (amounts[i] * _ticketPrice[ids[i]]);
         }
         require(
-            paymentToken.transferFrom(msg.sender, address(this), total),
+            paymentToken.transferFrom(payer, address(this), total),
             "Ticketing: Payment for tickets failed"
         );
         _mintBatch(to, ids, amounts, "");
