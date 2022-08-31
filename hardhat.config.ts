@@ -6,8 +6,7 @@ import "solidity-coverage";
 import 'solidity-docgen';
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.9",
-  docgen:{},
+  solidity: "0.8.9"
 };
 
 export default config;
