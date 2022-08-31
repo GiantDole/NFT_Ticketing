@@ -32,7 +32,7 @@ contract ERC1155Ticketing is ERC1155Supply, ERC2981Base, IERC1155Receiver, Ownab
 
     //Mapping of token ID to its URI
     //Every token has its URI in addition to the event URI
-    mapping (uint256 => string) private _tokenURI;
+    mapping(uint256 => string) private _tokenURI;
 
     //Mapping of token ID to its price per token/ticket
     mapping(uint256 => uint256) private _ticketPrice;
