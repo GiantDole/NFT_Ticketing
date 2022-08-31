@@ -9,6 +9,7 @@ typechain-types
 ERC1155
 examples
 yarn.lock
+yarn-error.log
 
 #Hardhat files
 cache

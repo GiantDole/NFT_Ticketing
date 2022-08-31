@@ -14,7 +14,7 @@ const { deployMockContract } = waffle;
 //TODO: test batch minting and burning
 
 
-describe("Testing ERC1155 Ticketing", () => {
+xdescribe("Testing ERC1155 Ticketing", () => {
     let ticketContract: ERC1155Ticketing;
     let mockContract: MockContract;
     let managerContract:SignerWithAddress;
