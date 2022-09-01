@@ -19,4 +19,6 @@ interface Ticket {
     address: string;
     price: number;
     ticketTypes: Array<string>;
+    ipfs_uri: string;
 }
+
