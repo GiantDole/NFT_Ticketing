@@ -16,10 +16,11 @@ interface Event {
 interface Ticket {
     id: number;
     name: string;
-    address: string;
-    price: number;
-    ticketTypes: Array<string>;
-    ipfs_uri: string;
+    description: string;
+    date: number;
+    image: string;
+    external_link: string;
+    royalties: number; 
 }
 
 async function getTicket(id: number) : Promise<string> {
