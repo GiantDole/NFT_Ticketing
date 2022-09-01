@@ -2,7 +2,7 @@ interface User {
     id: number;
     name: string;
     walletAddress: string;
-    tickets: Array<Tickets>; 
+    tickets: Array<Ticket>; 
     events: Array<Event>;
 }
 
@@ -22,33 +22,33 @@ interface Ticket {
     ipfs_uri: string;
 }
 
-async function getTicket(id: number) : string {
-    const ticket: string; 
+async function getTicket(id: number) : Promise<string> {
+    const ticket: string = ''; 
     return ticket; 
 }
 
-async function getEvent(id: number) : string {
-    const event: string; 
+async function getEvent(id: number) : Promise<string> {
+    const event: string = ''; 
     return event; 
 } 
 
-async function getTicketTypeByEvent(event: string) : Array<string> {
-    const ticketTypes: Array<string>;
+async function getTicketTypeByEvent(event: string) : Promise<string[]> {
+    const ticketTypes: Array<string> = [];
     return ticketTypes;
 } 
 
-async function getTicketTypeByTicketType(ticketType: string) : Array<string> {
-    const ticketTypes: Array<string>;
+async function getTicketTypeByTicketType(ticketType: string) : Promise<string[]> {
+    const ticketTypes: Array<string> = [];
     return ticketTypes;
 } 
 
-async function getTicketsOwnedByEvent(event: string) : Array<Ticket> { 
-    const tickets: Array<Ticket>;
-    return tickets;
+async function getTicketsOwnedByEvent(event: string): Promise<Ticket[]> {
+  const tickets: Array<Ticket> = [];
+  return tickets;
 } 
 
-async function getTicketsOwnedByUser(user: string) : Array<Ticket> { 
-    const tickets: Array<Ticket>;
+async function getTicketsOwnedByUser(user: string) : Promise<Ticket[]> { 
+    const tickets: Array<Ticket> = [];
     return tickets;
 } 
 
