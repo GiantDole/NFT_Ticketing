@@ -8,7 +8,13 @@ import { OrganizersModule } from './organizers/organizers.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 
 @Module({
-  imports: [UsersModule, EventsModule, TicketsModule, OrganizersModule, BlockchainModule],
+  imports: [
+    UsersModule,
+    EventsModule,
+    TicketsModule,
+    OrganizersModule,
+    BlockchainModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

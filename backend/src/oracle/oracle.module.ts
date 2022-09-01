@@ -4,6 +4,6 @@ import { OracleController } from './oracle.controller';
 
 @Module({
   controllers: [OracleController],
-  providers: [OracleService]
+  providers: [OracleService],
 })
 export class OracleModule {}

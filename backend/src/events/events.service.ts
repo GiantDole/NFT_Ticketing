@@ -18,7 +18,6 @@ export class EventsService {
     return 'all the events ser';
   }
 
-
   create(createEventDto: CreateEventDto) {
     return 'This action adds a new event';
   }
@@ -28,7 +27,7 @@ export class EventsService {
   }
 
   findOne(id: number) {
-  //  const event = await managerContract.getEventByID(id);
+    //  const event = await managerContract.getEventByID(id);
 
     return `This action returns a #${id} and ${event}`;
   }

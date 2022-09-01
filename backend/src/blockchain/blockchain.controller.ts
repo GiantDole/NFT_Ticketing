@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { BlockchainService } from './blockchain.service';
 import { CreateBlockchainDto } from './dto/create-blockchain.dto';
 import { UpdateBlockchainDto } from './dto/update-blockchain.dto';
@@ -23,7 +31,10 @@ export class BlockchainController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBlockchainDto: UpdateBlockchainDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateBlockchainDto: UpdateBlockchainDto,
+  ) {
     return this.blockchainService.update(+id, updateBlockchainDto);
   }
 
