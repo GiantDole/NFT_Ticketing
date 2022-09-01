@@ -18,6 +18,15 @@ function setupSigner() {
     return wallet.connect(provider);
 }
 
+async function getSigner() {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    // Prompt user for account connections
+    await provider.send("eth_requestAccounts", []);
+    const signer = provider.getSigner();
+    console.log("Account:", await signer.getAddress());
+    return signer;
+}
+
 
 //signer should be the user
 //the user allows the ERC1155 smart contract to use amount of tokens for the purchase
@@ -41,14 +50,12 @@ async function tokenAllowance(
 }
 
 async function buyTicket(
-    addr:string,
+    signer:ethers.providers.JsonRpcSigner,
     managerAddress:string, 
     eventID: number,
     ticketID: number,
     amount: number
 ) {
-    const signer = setupProvider();
-
     const managerContract = new ethers.Contract(
         managerAddress,
         managerJson.abi,
@@ -56,19 +63,27 @@ async function buyTicket(
     );
     
     //Buyer must have allowed the ticket contract to use their tokens
-    const unsignedTx = await managerContract.populateTransaction['buyTicket'](
-        addr,
+    /*const unsignedTx = await managerContract.populateTransaction.buyTicket(
+        signer.address,
         eventID,
         ticketID,
         amount
     );
 
-    return unsignedTx;
+    return unsignedTx;*/
+    const result = managerContract.buyTicket(
+        signer._address,
+        eventID,
+        ticketID,
+        amount
+    )
+
+    return result;
 }
 
 async function main() {
     console.log(await buyTicket(
-        setupSigner().address,
+        await getSigner(),
         managerAddr,
         5,
         10,
